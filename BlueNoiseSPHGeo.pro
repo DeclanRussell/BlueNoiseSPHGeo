@@ -27,7 +27,8 @@ SOURCES+= src/main.cpp \
     src/ShaderUtils.cpp \
     src/Camera.cpp \
     src/Text.cpp \
-    src/SPHSolverCUDA.cpp
+    src/SPHSolverCUDA.cpp \
+    src/Model.cpp
 
 # same for the .h files
 HEADERS+=include/MainWindow.h \
@@ -39,7 +40,8 @@ HEADERS+=include/MainWindow.h \
     include/Camera.h \
     include/Text.h \
     include/SPHSolverCUDA.h \
-    include/SPHSolverCUDAKernals.h
+    include/SPHSolverCUDAKernals.h \
+    include/Model.h
 # and add the include dir into the search path for Qt and make
 INCLUDEPATH +=./include \
             $$(ASSIMP_DIR)\include
@@ -57,7 +59,7 @@ win32:{
     DEFINES+=WIN32
     DEFINES+=_WIN32
     DEFINES += GLEW_STATIC
-    INCLUDEPATH+=C:/boost
+    INCLUDEPATH+="C:/boost"
     LIBS+= -lopengl32 -lglew32s
     LIBS+= -L$$(ASSIMP_DIR)\lib\Debug -lassimp
 }
@@ -82,17 +84,17 @@ DEFINES += NOMINMAX
 CUDA_SOURCES = "$$PWD"/cudaSrc/*.cu
 
 #This is to add our .cu files to our file browser in Qt
-SOURCES+=cudaSrc/*cu
-SOURCES-=cudaSrc/*cu
+#SOURCES+=cudaSrc/*cu
+#SOURCES-=cudaSrc/*cu
 
 # Path to cuda SDK install
 macx:CUDA_DIR = /Developer/NVIDIA/CUDA-6.5
 linux:CUDA_DIR = /usr/local/cuda-6.5
-win32:CUDA_DIR = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.5"
+win32:CUDA_DIR = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v8.0"
 # Path to cuda toolkit install
 macx:CUDA_SDK = /Developer/NVIDIA/CUDA-6.5/samples
 linux:CUDA_SDK = /usr/local/cuda-6.5/samples
-win32:CUDA_SDK = "C:\ProgramData\NVIDIA Corporation\CUDA Samples\v7.5"
+win32:CUDA_SDK = "C:\ProgramData\NVIDIA Corporation\CUDA Samples\v8.0"
 
 #Cuda include paths
 INCLUDEPATH += $$CUDA_DIR/include
