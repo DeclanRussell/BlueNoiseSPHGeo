@@ -12,6 +12,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "SPHSolverCUDA.h"
 
+#include <openvdb/openvdb.h>
+
 #define DtoR M_PI/180.0f
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -39,6 +41,8 @@ NGLScene::NGLScene(const QGLFormat _format, QWidget *_parent) : QGLWidget(_forma
 //----------------------------------------------------------------------------------------------------------------------
 NGLScene::~NGLScene()
 {
+  if(m_model) delete m_model;
+  m_model = 0;
   delete m_SPHSolverCUDA;
   delete m_particleDrawer;
 }
@@ -116,7 +120,13 @@ void NGLScene::resetSim()
     m_SPHSolverCUDA->genRandomSamples(m_SPHSolverCUDA->getNumParticles());
     //m_particleDrawer->setPositions(positions);
 }
-
+//----------------------------------------------------------------------------------------------------------------------
+void NGLScene::importModel(QString _loc)
+{
+    delete m_model;
+    m_model = new Model(_loc.toStdString());
+}
+//----------------------------------------------------------------------------------------------------------------------
 void NGLScene::initializeGL()
 {
 #ifndef DARWIN
@@ -175,6 +185,11 @@ void NGLScene::initializeGL()
   glUniform1f(m_phongShader->getUniformLoc("light.linearAttenuation"),0.f);
   glUniform1f(m_phongShader->getUniformLoc("light.spotCosCutoff"),180.f);
 
+  m_MLoc = m_phongShader->getUniformLoc("M");
+  m_MVLoc = m_phongShader->getUniformLoc("MV");
+  m_MVPLoc = m_phongShader->getUniformLoc("MVP");
+  m_normalMatLoc = m_phongShader->getUniformLoc("normalMatrix");
+
 
   //Create our text drawer
   m_text = new Text(QFont("Ariel"));
@@ -191,6 +206,14 @@ void NGLScene::initializeGL()
   m_SPHSolverCUDA = new SPHSolverCUDA;
   m_SPHSolverCUDA->genRandomSamples(22000);
 
+  m_model = new Model("models/newteapot.obj");
+  std::cout<<"Num faces: "<<m_model->getNumFaces()<<std::endl;
+  std::cout<<"Model has "<<m_model->getNumVerts()<<" verts"<<std::endl;
+
+  // initialize openvdb
+  openvdb::initialize();
+
+
 
   // Start our timer event. This will begin calling the TimerEvent function that updates our simulation.
   startTimer(0);
@@ -203,13 +226,7 @@ void NGLScene::loadMatricesToShader()
   glm::mat4 MV;
   glm::mat4 MVP;
   glm::mat3 normalMatrix;
-  glm::mat4 M;
-  // Rotation based on the mouse position for our global transform
-  glm::mat4 rotX;
-  glm::mat4 rotY;
-  // create the rotation matrices
-  rotX = glm::rotate(rotX,(float)-m_spinXFace,glm::vec3(1,0,0));
-  rotY = glm::rotate(rotY,(float)-m_spinYFace,glm::vec3(0,1,0));
+  glm::mat4 M = m_mouseGlobalTX;
   //M = m_mouseGlobalTX*M;
   MV = m_cam.getViewMatrix()*M;
   MVP= m_cam.getProjectionMatrix()*m_cam.getViewMatrix()*M;
@@ -253,10 +270,15 @@ void NGLScene::paintGL()
   m_mouseGlobalTX[3][0] = m_modelPos.x;
   m_mouseGlobalTX[3][1] = m_modelPos.y;
   m_mouseGlobalTX[3][2] = m_modelPos.z;
+  loadMatricesToShader();
+
+  //draw our VAO
+  glBindVertexArray(m_model->getVAO());
+  glDrawArrays(GL_TRIANGLES,0,m_model->getNumVerts());
 
   m_particleDrawer->setColour(1.f,0.f,0.f);  //red
 #ifdef OPENGL_BUFFERS
-  m_particleDrawer->drawFromVAO(m_SPHSolverCUDA->getPositionsVAO(),m_SPHSolverCUDA->getNumParticles(), m_mouseGlobalTX,m_cam.getViewMatrix(),m_cam.getProjectionMatrix());
+  //m_particleDrawer->drawFromVAO(m_SPHSolverCUDA->getPositionsVAO(),m_SPHSolverCUDA->getNumParticles(), m_mouseGlobalTX,m_cam.getViewMatrix(),m_cam.getProjectionMatrix());
 #else
   m_particleDrawer->setPositions(m_SPHSolverCUDA->getParticlePositionsGLM());
   m_particleDrawer->draw(m_mouseGlobalTX,m_cam.getViewMatrix(),m_cam.getProjectionMatrix());

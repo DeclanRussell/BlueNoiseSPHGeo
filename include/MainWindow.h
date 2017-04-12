@@ -28,6 +28,9 @@ public slots:
     // Gererate sample slot
     void genSample();
 
+    // Get Model
+    void getModel();
+
 private:
     NGLScene *m_openGLWidget;
     QGridLayout *m_gridLayout;

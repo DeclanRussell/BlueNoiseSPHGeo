@@ -91,11 +91,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent){
     m_sampleZ = new QDoubleSpinBox(prmGb);
     m_sampleZ->setValue(1);
     m_sampleZ->setMinimum((double)INFINITY*-1.0);
-    prmGbLyt->addWidget(m_sampleX,2,2,1,1);
-    prmGbLyt->addWidget(m_sampleY,2,3,1,1);
-    prmGbLyt->addWidget(m_sampleZ,2,4,1,1);
+    prmGbLyt->addWidget(m_sampleX,4,2,1,1);
+    prmGbLyt->addWidget(m_sampleY,4,3,1,1);
+    prmGbLyt->addWidget(m_sampleZ,4,4,1,1);
 
-
+    // Import Model
+    QPushButton *importBtn = new QPushButton("Import Model",genGb);
+    prmGbLyt->addWidget(importBtn ,5,0,1,2);
+    connect(importBtn ,SIGNAL(pressed()),this,SLOT(getModel()));
 
 }
 
@@ -121,4 +124,13 @@ void MainWindow::genSample()
     m_sampleX->setValue(x);
     m_sampleY->setValue(y);
     m_sampleZ->setValue(z);
+}
+
+void MainWindow::getModel()
+{
+    QString dir = QFileDialog::getOpenFileName(this,"Import Geometry","models/");
+    if(!dir.isEmpty())
+    {
+        m_openGLWidget->importModel(dir);
+    }
 }

@@ -70,6 +70,36 @@ unix*:QMAKE_CXXFLAGS_WARN_ON += "-Wno-unused-parameter"
 
 DEFINES += OPENGL_BUFFERS
 
+#Include path and libs to OpenVDB, You will have to set this yourself
+#if you are using a different platform.
+win32:INCLUDEPATH += "C:\Program Files\OpenVDB\include"
+win32:QMAKE_LIBDIR += "C:\Program Files\OpenVDB\lib"
+win32:LIBS += -lopenvdb
+#Include path and libs to openEXR for some reason on my windows machine
+#OpenVDB doesnt seem to have half.h :S
+win32:INCLUDEPATH += "C:\Program Files\ilmbase\include"
+win32:QMAKE_LIBDIR += "C:\Program Files\ilmbase\lib"
+win32:LIBS += -lhalf
+#Include path and libs to threading building blocks library
+win32:INCLUDEPATH += "C:\Program Files\tbb\include"
+win32:QMAKE_LIBDIR += "C:\Program Files\tbb\lib\intel64\vc12"
+win32:LIBS += -ltbb
+#Add the boost libraries
+win32:QMAKE_LIBDIR += "C:\boost\stage\lib"
+win32:LIBS += -lboost_system-vc120-mt-gd-1_58
+#Include path and libs to zlib
+win32:INCLUDEPATH += "C:\Program Files\zlib\include"
+win32:QMAKE_LIBDIR += "C:\Program Files\zlib\lib"
+win32:LIBS += -lzlibd
+
+
+
+# Add some defines for openvdb
+win32:DEFINES += _WINDOWS
+DEFINES += NDEBUG
+DEFINES += OPENVDB_STATICLIB
+DEFINES += OPENEXR_DLL
+
 #----------------------------------------------------------------
 #-------------------------Cuda setup-----------------------------
 #----------------------------------------------------------------
